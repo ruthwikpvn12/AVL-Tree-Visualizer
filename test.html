@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AVL Tree Visualizer</title>
+
+<style>
+:root {
+  --bg: #020617;
+  --accent: #38bdf8;
+  --text: #e5e7eb;
+  --border: #334155;
+  --warn: #f87171;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #020617, #000);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+  text-align: center;
+}
+
+h1 {
+  margin: 22px 0 10px;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+input, button {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+}
+
+input {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+button {
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+  color: #020617;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+#msg {
+  height: 20px;
+  font-size: 14px;
+  color: var(--warn);
+}
+
+canvas {
+  display: block;
+  margin: 20px auto;
+  background: var(--bg);
+  border-radius: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>AVL Tree Visualizer</h1>
+
+<div class="controls">
+  <input id="valueInput" type="number" placeholder="Enter value">
+  <button onclick="insertValue()">Insert</button>
+  <button id="undoBtn" onclick="undo()" disabled>Undo</button>
+</div>
+
+<div id="msg"></div>
+
+<canvas id="canvas" width="1000" height="560"></canvas>
+
+<script>
+// ================= CANVAS =================
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const undoBtn = document.getElementById("undoBtn");
+const msg = document.getElementById("msg");
+
+// ================= NODE =================
+class Node {
+  constructor(v) {
+    this.v = v;
+    this.left = null;
+    this.right = null;
+    this.h = 1;
+
+    this.x = canvas.width / 2;
+    this.y = 50;
+    this.tx = this.x;
+    this.ty = this.y;
+
+    this.scale = 1;
+  }
+}
+
+// ================= AVL =================
+class AVL {
+  height(n){ return n ? n.h : 0; }
+  bf(n){ return n ? this.height(n.left)-this.height(n.right):0; }
+
+  rRotate(y){
+    const x=y.left,t=x.right;
+    x.right=y; y.left=t;
+    y.h=1+Math.max(this.height(y.left),this.height(y.right));
+    x.h=1+Math.max(this.height(x.left),this.height(x.right));
+    return x;
+  }
+
+  lRotate(x){
+    const y=x.right,t=y.left;
+    y.left=x; x.right=t;
+    x.h=1+Math.max(this.height(x.left),this.height(x.right));
+    y.h=1+Math.max(this.height(y.left),this.height(y.right));
+    return y;
+  }
+
+  insert(n,v){
+    if(!n) return new Node(v);
+    if(v<n.v) n.left=this.insert(n.left,v);
+    else if(v>n.v) n.right=this.insert(n.right,v);
+    else return n;
+
+    n.h=1+Math.max(this.height(n.left),this.height(n.right));
+    const b=this.bf(n);
+
+    if(b>1 && v<n.left.v) return this.rRotate(n);
+    if(b<-1 && v>n.right.v) return this.lRotate(n);
+    if(b>1 && v>n.left.v){ n.left=this.lRotate(n.left); return this.rRotate(n); }
+    if(b<-1 && v<n.right.v){ n.right=this.rRotate(n.right); return this.lRotate(n); }
+
+    return n;
+  }
+}
+
+const avl = new AVL();
+let root = null;
+let history = [];
+
+// ================= LAYOUT =================
+function layout(n,x,y,gap){
+  if(!n) return;
+  n.tx=x; n.ty=y;
+  layout(n.left,x-gap,y+90,gap/1.6);
+  layout(n.right,x+gap,y+90,gap/1.6);
+}
+
+// ================= SPRING ANIMATION =================
+function spring(n){
+  if(!n) return;
+  n.x += (n.tx-n.x)*0.18;
+  n.y += (n.ty-n.y)*0.18;
+
+  const d=Math.hypot(n.tx-n.x,n.ty-n.y);
+  n.scale = 1 + Math.min(d/80,0.25);
+
+  spring(n.left);
+  spring(n.right);
+}
+
+// ================= DRAW =================
+function line(a,b){
+  ctx.strokeStyle="#64748b";
+  ctx.beginPath();
+  ctx.moveTo(a.x,a.y);
+  ctx.lineTo(b.x,b.y);
+  ctx.stroke();
+}
+
+function drawNode(n){
+  ctx.save();
+  ctx.translate(n.x,n.y);
+  ctx.scale(n.scale,n.scale);
+
+  ctx.fillStyle="#38bdf8";
+  ctx.beginPath();
+  ctx.arc(0,0,18,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle="#020617";
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+  ctx.fillText(n.v,0,0);
+  ctx.restore();
+}
+
+function draw(n){
+  if(!n) return;
+  if(n.left){ line(n,n.left); draw(n.left); }
+  if(n.right){ line(n,n.right); draw(n.right); }
+  drawNode(n);
+}
+
+// ================= LOOP =================
+function loop(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  spring(root);
+  draw(root);
+  requestAnimationFrame(loop);
+}
+loop();
+
+// ================= ACTIONS =================
+function rebuild() {
+  root = null;
+  history.forEach(v => root = avl.insert(root, v));
+  layout(root, canvas.width/2, 50, 240);
+  undoBtn.disabled = history.length === 0;
+}
+
+function insertValue(){
+  const v = parseInt(valueInput.value);
+  if(isNaN(v)) return;
+
+  msg.textContent = "";
+
+  if (history.includes(v)) {
+    msg.textContent = "Node already exists in the tree";
+    return;
+  }
+
+  history.push(v);
+  rebuild();
+  valueInput.value = "";
+}
+
+function undo(){
+  if(history.length === 0) return;
+  history.pop();
+  rebuild();
+}
+</script>
+
+</body>
+</html>

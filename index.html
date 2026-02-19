@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AVL Tree Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+    </div>
+    
+    <div class="container">
+        <h1>🌳 AVL Tree Visualizer</h1>
+        
+        <div class="controls">
+            <div class="input-group">
+                <input type="text" id="nodeValue" placeholder="Enter a number..." />
+                <button class="btn-insert" onclick="insertNode()">Insert Node</button>
+                <button class="btn-undo" onclick="undoInsert()">Undo</button>
+                <button class="btn-clear" onclick="clearAll()">Clear All</button>
+                <button class="btn-log" onclick="toggleLog()">📋 Operation Log</button>
+            </div>
+            <div class="status" id="status"></div>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="treeCanvas" width="1140" height="600"></canvas>
+        </div>
+    </div>
+
+    <!-- Side Panel for Operation Log -->
+    <div class="log-panel" id="logPanel">
+        <div class="log-panel-header">
+            <h3>🔄 Operation Log</h3>
+            <button class="close-btn" onclick="toggleLog()">✕</button>
+        </div>
+        <div class="log-panel-content" id="logEntries"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
