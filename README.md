@@ -10,7 +10,7 @@ An interactive web-based tool for visualizing AVL tree operations, rotations, an
 - **Balance Indicators**: Display of height and balance factors for each node
 - **Undo/Clear**: Revert operations or reset the tree
 - **Modern UI**: Gradient backgrounds with smooth animations
-- 
+
 ## Technical Details
 
 - **Language**: Vanilla JavaScript (ES6+)
