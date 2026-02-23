@@ -18,10 +18,12 @@ An interactive web-based tool for visualizing AVL tree operations, rotations, an
 - **Styling**: Pure CSS3
 - **Algorithm**: Standard AVL tree with O(log n) insertion
 
-
-## **Built for**: Educational purposes and algorithm visualization  
-## **Best for**: Students, educators, and developers learning data structures
+## Live Demo: - https://silver-kitsune-2aa283.netlify.app/
 
 ## Project Screenshots :- 
 <img width="1861" height="954" alt="image" src="https://github.com/user-attachments/assets/58116128-f3ff-4cd6-b3fd-198cede5a647" />
 <img width="1861" height="954" alt="image" src="https://github.com/user-attachments/assets/9f658baf-d5af-4d4e-b560-074f05adca31" />
+
+
+## **Built for**: Educational purposes and algorithm visualization  
+## **Best for**: Students, educators, and developers learning data structures
